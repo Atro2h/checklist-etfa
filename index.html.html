@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="theme-color" content="#185FA5"/>
+<title>Checklist ETFA — SGS Chile</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f4;--bg3:#ebebea;
+  --tx:#1a1a18;--tx2:#5f5e5a;--tx3:#888780;
+  --bd:#d3d1c7;--bd2:#b4b2a9;
+  --r:8px;--rl:12px;
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-b:#378ADD;
+  --green:#27500A;--green-l:#EAF3DE;--green-b:#639922;
+  --amber:#633806;--amber-l:#FAEEDA;--amber-b:#BA7517;
+  --red:#501313;--red-l:#FCEBEB;--red-b:#E24B4A;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--bg2:#262624;--bg3:#2e2e2c;
+    --tx:#f0ede8;--tx2:#a8a69e;--tx3:#6e6d68;
+    --bd:#3a3936;--bd2:#4e4d49;
+    --blue:#378ADD;--blue-l:#0C447C;--blue-b:#85B7EB;
+    --green:#97C459;--green-l:#173404;--green-b:#639922;
+    --amber:#EF9F27;--amber-l:#412402;--amber-b:#BA7517;
+    --red:#F09595;--red-l:#501313;--red-b:#E24B4A;
+  }
+}
+html,body{min-height:100vh;background:var(--bg3);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:var(--tx)}
+.app{max-width:640px;margin:0 auto;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{background:var(--blue);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:50}
+.header-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.header h1{font-size:16px;font-weight:600;letter-spacing:-.2px}
+.header-sub{font-size:11px;opacity:.8;margin-top:1px}
+.badge-global{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.bg-ok{background:#EAF3DE;color:#27500A}
+.bg-warn{background:#FAEEDA;color:#633806}
+.bg-fail{background:#FCEBEB;color:#501313}
+.bg-pend{background:rgba(255,255,255,.2);color:#fff}
+.pbar-wrap{margin-top:8px;background:rgba(255,255,255,.25);border-radius:20px;height:4px;overflow:hidden}
+.pbar{height:4px;background:#fff;border-radius:20px;transition:width .4s;width:0%}
+.plabel{font-size:10px;opacity:.75;margin-top:3px;text-align:right}
+
+/* META */
+.meta{padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;gap:8px}
+.meta-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.field input{font-size:14px;padding:7px 10px;border:1px solid var(--bd);border-radius:var(--r);background:var(--bg);color:var(--tx);width:100%;-webkit-appearance:none}
+.field input:focus{outline:none;border-color:var(--blue-b);box-shadow:0 0 0 3px var(--blue-l)}
+.field-full{grid-column:1/-1}
+
+/* METHOD PICKER */
+.method-picker{padding:12px 16px;border-bottom:1px solid var(--bd)}
+.section-label{font-size:10px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.method-groups{display:flex;flex-direction:column;gap:10px}
+.mgroup-title{font-size:12px;font-weight:600;color:var(--tx2);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:10px 14px;border-radius:20px;font-size:14px;cursor:pointer;border:1px solid var(--bd);background:var(--bg);color:var(--tx2);transition:all .15s;user-select:none;-webkit-user-select:none;font-family:inherit;font-weight:500;min-height:44px;-webkit-appearance:none;touch-action:manipulation}
+.chip:active{opacity:.75;transform:scale(.96)}
+.chip.ac{background:var(--blue-l);border-color:var(--blue-b);color:var(--blue);font-weight:600}
+.chip.ai{background:var(--green-l);border-color:var(--green-b);color:var(--green);font-weight:600}
+.chip svg{width:15px;height:15px;flex-shrink:0}
+
+/* METHOD BANNER */
+.mbanner{display:none;margin:8px 16px 0;padding:8px 12px;border-radius:var(--r);font-size:12px;gap:6px;align-items:center;flex-wrap:wrap;line-height:1.5}
+.mbanner.show{display:flex}
+.mb-cems{background:var(--blue-l);color:var(--blue);border:1px solid var(--blue-b)}
+.mb-iso{background:var(--green-l);color:var(--green);border:1px solid var(--green-b)}
+.mb-both{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b)}
+.mtag{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;margin:1px}
+.mtag-c{background:#B5D4F4;color:#042C53}
+.mtag-i{background:#C0DD97;color:#173404}
+
+/* ALERTS */
+.alerts{display:flex;flex-direction:column;gap:6px;padding:0 16px}
+.alert{display:none;padding:9px 12px;border-radius:var(--r);font-size:13px;gap:8px;align-items:flex-start;line-height:1.5}
+.alert.show{display:flex}
+.alert-d{background:var(--red-l);color:var(--red);border:1px solid var(--red-b)}
+.alert-w{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber-b)}
+.alert svg{width:16px;height:16px;flex-shrink:0;margin-top:2px}
+
+/* SECTIONS */
+.sections{padding:12px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.empty{padding:40px 0;text-align:center;color:var(--tx3);font-size:14px}
+.empty svg{width:36px;height:36px;margin:0 auto 10px;display:block;opacity:.35}
+
+.sec{border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.sec.fail{border-color:var(--red-b)}
+.sec.allok{border-color:var(--green-b)}
+.sec-head{display:flex;align-items:center;gap:8px;padding:11px 13px;background:var(--bg);cursor:pointer;user-select:none;-webkit-user-select:none}
+.sec-head:active{background:var(--bg2)}
+.sec-ico{font-size:18px;flex-shrink:0;width:22px;text-align:center}
+.sec-ttl{font-size:13px;font-weight:600;flex:1;line-height:1.3}
+.sec-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;flex-shrink:0}
+.sb-c{background:var(--blue-l);color:var(--blue)}
+.sb-i{background:var(--green-l);color:var(--green)}
+.sb-cm{background:var(--bg2);color:var(--tx2)}
+.sec-cnt{font-size:11px;color:var(--tx3);flex-shrink:0}
+.sec-arr{transition:transform .2s;flex-shrink:0;color:var(--tx3)}
+.sec-arr svg{width:14px;height:14px}
+.rotated{transform:rotate(-90deg)}
+.sec-body{border-top:1px solid var(--bd)}
+
+/* ITEMS */
+.item{display:grid;grid-template-columns:36px 1fr;align-items:start;padding:10px 13px;gap:0;border-bottom:1px solid var(--bd)}
+.item:last-child{border-bottom:none}
+.item:active{background:var(--bg2)}
+.cb-wrap{display:flex;align-items:flex-start;padding-top:2px}
+.cb-wrap input[type=checkbox]{width:19px;height:19px;accent-color:var(--blue-b);cursor:pointer;flex-shrink:0}
+.item-right{display:flex;flex-direction:column;gap:6px}
+.item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+.item-txt{font-size:13px;line-height:1.4;flex:1}
+.item-det{font-size:11px;color:var(--tx3);line-height:1.4}
+.flags{display:flex;gap:4px;flex-shrink:0}
+.fb{width:36px;height:36px;border-radius:50%;border:1px solid var(--bd);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;-webkit-appearance:none;touch-action:manipulation}
+.fb:active{transform:scale(.88)}
+.fb svg{width:15px;height:15px}
+.fb.ok{background:var(--green-l);border-color:var(--green-b);color:var(--green)}
+.fb.wn{background:var(--amber-l);border-color:var(--amber-b);color:var(--amber)}
+.fb.fl{background:var(--red-l);border-color:var(--red-b);color:var(--red)}
+.note{font-size:12px;padding:5px 8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);width:100%;-webkit-appearance:none}
+.note:focus{outline:none;border-color:var(--blue-b)}
+
+/* OBS */
+.obs-wrap{padding:12px 16px;border-top:1px solid var(--bd)}
+.obs-wrap textarea{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--bd);border-radius:var(--r);background:var(--bg);color:var(--tx);resize:vertical;font-family:inherit;line-height:1.5;min-height:70px}
+.obs-wrap textarea:focus{outline:none;border-color:var(--blue-b)}
+
+/* FOOTER */
+.footer{padding:12px 16px 24px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--bd)}
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 16px;border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--bg);color:var(--tx);transition:all .15s;font-family:inherit;width:100%;-webkit-appearance:none}
+.btn:active{transform:scale(.98)}
+.btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-p:active{background:#0C447C}
+.btn svg{width:17px;height:17px}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-end;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:var(--bg);border-radius:16px 16px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:20px 16px 32px}
+.modal h2{font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.modal-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.stag{display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600}
+.stag-ok{background:var(--green-l);color:var(--green)}
+.stag-wn{background:var(--amber-l);color:var(--amber)}
+.stag-fl{background:var(--red-l);color:var(--red)}
+.stag-nd{background:var(--bg2);color:var(--tx2)}
+.modal-body{font-size:11.5px;line-height:1.65;white-space:pre-wrap;background:var(--bg2);border-radius:var(--r);padding:12px;border:1px solid var(--bd);font-family:monospace;max-height:50vh;overflow-y:auto;margin-bottom:12px}
+.modal-actions{display:flex;flex-direction:column;gap:8px}
+.copied{font-size:12px;color:var(--green);margin-top:4px;display:none;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-row">
+      <div>
+        <h1>📋 Checklist preoperacional</h1>
+        <div class="header-sub">SGS Chile · Emisiones Atmosféricas</div>
+      </div>
+      <span class="badge-global bg-pend" id="gbadge">Sin completar</span>
+    </div>
+    <div class="pbar-wrap"><div class="pbar" id="pbar"></div></div>
+    <div class="plabel" id="plabel">Selecciona un método para comenzar</div>
+  </div>
+
+  <div class="meta">
+    <div class="meta-row">
+      <div class="field field-full"><label>Empresa / Fuente</label><input id="empresa" placeholder="Ej: ENAP Refinería S.A." autocomplete="off"/></div>
+    </div>
+    <div class="meta-row">
+      <div class="field"><label>N° Registro</label><input id="registro" placeholder="IC-RYP-9459" autocomplete="off"/></div>
+      <div class="field"><label>Fecha</label><input id="fecha" type="date"/></div>
+    </div>
+    <div class="meta-row">
+      <div class="field field-full"><label>Supervisor a cargo</label><input id="supervisor" placeholder="Nombre completo" autocomplete="off"/></div>
+    </div>
+    <div class="meta-row">
+      <div class="field field-full"><label>Equipo (Sup / Op1 / Op2 / APR)</label><input id="equipo" placeholder="Ej: J. Castillo / P. Rojas / M. Díaz" autocomplete="off"/></div>
+    </div>
+  </div>
+
+  <div class="method-picker">
+    <div class="section-label">Métodos aplicables</div>
+    <div class="method-groups">
+      <div>
+        <div class="mgroup-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:#185FA5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          Medición continua de gases (CEMS)
+        </div>
+        <div class="chips" id="chips-cems"></div>
+      </div>
+      <div>
+        <div class="mgroup-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:#3B6D11"><path d="M9 3h6l1 7H8L9 3z"/><path d="M8 10v11a1 1 0 001 1h6a1 1 0 001-1V10"/><path d="M10 14h4"/></svg>
+          Muestreo isocinético
+        </div>
+        <div class="chips" id="chips-iso"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mbanner" id="mbanner"></div>
+  <div class="alerts" id="alerts" style="margin-top:8px"></div>
+
+  <div class="sections" id="sections">
+    <div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+      Selecciona uno o más métodos<br>para cargar el checklist
+    </div>
+  </div>
+
+  <div class="obs-wrap">
+    <div class="section-label" style="margin-bottom:6px">Observaciones / novedades</div>
+    <textarea id="obs" placeholder="Condiciones de acceso, cambios de última hora, faltantes, comentarios de seguridad..."></textarea>
+  </div>
+
+  <div class="footer">
+    <button class="btn btn-p" onclick="generarReporte()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Generar reporte para supervisor
+    </button>
+    <button class="btn" onclick="resetear()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+      Reiniciar checklist
+    </button>
+  </div>
+
+</div>
+
+<!-- MODAL REPORTE -->
+<div class="modal-ov" id="modal-ov">
+  <div class="modal">
+    <h2>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" style="width:18px;height:18px"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+      Reporte preoperacional
+    </h2>
+    <div class="modal-tags" id="modal-tags"></div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-p" onclick="copiar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copiar para enviar
+      </button>
+      <button class="btn" onclick="compartir()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Compartir (WhatsApp / correo)
+      </button>
+      <button class="btn" onclick="cerrarModal()">Cerrar</button>
+    </div>
+    <div class="copied" id="copied">✓ Copiado al portapapeles</div>
+  </div>
+</div>
+
+<script>
+const METHODS = {
+  cems:[
+    {id:'CH6C', label:'CH-6C', sub:'SO₂'},
+    {id:'CH7E', label:'CH-7E', sub:'NOₓ'},
+    {id:'CH3A', label:'CH-3A', sub:'O₂/CO₂'},
+    {id:'CH25A',label:'CH-25A',sub:'COVs'}
+  ],
+  iso:[
+    {id:'CH5',   label:'CH-5',      sub:'MP total'},
+    {id:'CH29',  label:'CH-29 s/Hg',sub:'MP sin Hg'},
+    {id:'CH29Hg',label:'CH-29 c/Hg',sub:'MP con Hg'}
+  ]
+};
+
+const SECS = [
+  {
+    id:'docs', ico:'📄', title:'Documentación y trazabilidad', scope:'all',
+    items:[
+      {id:'d1',t:'Orden de trabajo / N° registro confirmado en SISAT',d:'Verificar que el PR de la fuente esté activo y vigente'},
+      {id:'d2',t:'Protocolo de muestreo / medición disponible',d:'Res. 1743/2019 o protocolo vigente del cliente / SMA'},
+      {id:'d3',t:'Credenciales de los IA y carnet SGS vigentes',d:'Todos los integrantes deben portarlas'},
+      {id:'d4',t:'Hoja de datos (planilla) preparada y rotulada',d:'Fecha, empresa, fuente, equipo, operador'},
+      {id:'d5',t:'Certificados de gases patrón disponibles',d:'Cma vigente, dentro de fecha de vencimiento',sc:'cems'},
+      {id:'d6',t:'Cadena de custodia de muestras preparada',d:'Formulario de custodia para envío a laboratorio',sc:'iso'}
+    ]
+  },
+  {
+    id:'cems_eq', ico:'📡', title:'Analizador de gases (CEMS)', scope:'cems',
+    items:[
+      {id:'ca1',t:'Analizador en buen estado físico, sin alarmas activas',d:'HORIBA PG-350 u otro. Pantalla operativa'},
+      {id:'ca2',t:'Batería / fuente de poder verificada',d:'Carga suficiente para duración de campaña'},
+      {id:'ca3',t:'Cilindro gas patrón — Cero (presión >20 bar)',d:'Válvula operativa, sin fugas'},
+      {id:'ca4',t:'Cilindro gas patrón — Medio (Cma verificada)',d:'Certificado vigente y disponible'},
+      {id:'ca5',t:'Cilindro gas patrón — Alto (Cma verificada)',d:'Certificado vigente y disponible'},
+      {id:'ca6',t:'Mangueras y conexiones del sistema sin fugas',d:'Racores en buen estado, línea limpia y seca'},
+      {id:'ca7',t:'Sonda de muestreo operativa y filtro limpio',d:'Sin obstrucciones ni humedad en el filtro'},
+      {id:'ca8',t:'DAHS / planilla de registro configurada',d:'Intervalo de datos correcto, hora del sistema sincronizada'},
+      {id:'ca9',t:'Calibración inicial planificada',d:'Secuencia Cero→Medio→Alto. SO₂ por sistema: ≥8-10 min estabilización'}
+    ]
+  },
+  {
+    id:'cems_gas', ico:'🔬', title:'Gases específicos por método', scope:'cems',
+    items:[
+      {id:'cg1',t:'SO₂ — cilindros patrón y certificados disponibles',d:'CH-6C: verificar Cma en los 3 niveles',sc_id:'CH6C'},
+      {id:'cg2',t:'SO₂ — considerar ≥8–10 min estabilización por sistema',d:'CH-6C: no confundir con ~3 min directo al analizador',sc_id:'CH6C'},
+      {id:'cg3',t:'NOₓ — cilindros patrón y certificados disponibles',d:'CH-7E: verificar Cma en los 3 niveles',sc_id:'CH7E'},
+      {id:'cg4',t:'NOₓ — convertidor catalítico operativo',d:'CH-7E: revisar estado del convertidor NO→NO₂',sc_id:'CH7E'},
+      {id:'cg5',t:'O₂/CO₂ — sensor paramagnético / NDIR verificado',d:'CH-3A: cero con N₂ o aire limpio confirmado',sc_id:'CH3A'},
+      {id:'cg6',t:'COVs — FID listo y gas de soporte H₂ disponible',d:'CH-25A: verificar encendido de llama, presión H₂ y aire sintético',sc_id:'CH25A'},
+      {id:'cg7',t:'COVs — gas patrón propano / isobutileno disponible',d:'CH-25A: gas de calibración del FID vigente y con presión',sc_id:'CH25A'}
+    ]
+  },
+  {
+    id:'iso_eq', ico:'🧪', title:'Tren isocinético — equipos principales', scope:'iso',
+    items:[
+      {id:'it1',t:'Caja fría completa con impingers (mínimo 4)',d:'CH-5: 2 con H₂O₂, 1 vacío, 1 sílica. CH-29: según protocolo'},
+      {id:'it2',t:'Caja caliente operativa (temperatura sonda y filtro)',d:'Mínimo 120°C o según especificación del método'},
+      {id:'it3',t:'Porta filtros limpios, secos y sin contaminación',d:'Sin residuos de campaña anterior'},
+      {id:'it4',t:'Boquillas completas con tuercas y férulas',d:'Juego acero inox y/o vidrio — revisar cada accesorio'},
+      {id:'it5',t:'Tubo Pitot tipo S sin deformaciones ni corrosión',d:'Verificar puntas simétricas y sin bloqueo'},
+      {id:'it6',t:'Bomba de vacío operativa (caudal y vacío verificados)',d:'Probar antes de salir a terreno'},
+      {id:'it7',t:'Medidor de gas seco calibrado (constante Y)',d:'Verificar según procedimiento CH-1'},
+      {id:'it8',t:'Manómetro inclinado / de orificio en buen estado',d:'Limpio, agua manométrica cargada si aplica'},
+      {id:'it9',t:'Termómetros / termopar de sonda y caja caliente',d:'Rango adecuado para temperatura de la fuente'},
+      {id:'it10',t:'Barómetro o lectura de presión barométrica',d:'Para corrección de resultados a condiciones de referencia'}
+    ]
+  },
+  {
+    id:'iso_cons', ico:'⚗️', title:'Reactivos, filtros y consumibles', scope:'iso',
+    items:[
+      {id:'ir1',t:'Filtros CH-5 disponibles (cantidad + repuestos)',d:'Al menos 1 por punto de muestreo + stock extra',sc_id:'CH5'},
+      {id:'ir2',t:'Filtros CH-29 disponibles (lote y fecha verificados)',d:'Cantidad según N° puntos + repuestos',sc_multi:['CH29','CH29Hg']},
+      {id:'ir3',t:'Solución H₂O₂ 3% preparada',d:'CH-5 / CH-29: absorbente estándar para impingers',sc_multi:['CH5','CH29','CH29Hg']},
+      {id:'ir4',t:'Solución para Hg preparada (KMnO₄ / H₂SO₄)',d:'Solo CH-29 c/Hg — preparar con EPP adecuado',sc_id:'CH29Hg'},
+      {id:'ir5',t:'Acetona grado reactivo disponible',d:'Para enjuague del tren — cantidad suficiente para todos los puntos'},
+      {id:'ir6',t:'Agua destilada / desionizada disponible',d:'Preparación de soluciones y enjuague'},
+      {id:'ir7',t:'Sílica seca en buen estado (no saturada)',d:'Reemplazar si cambió de color o está húmeda'},
+      {id:'ir8',t:'Frascos de recuperación etiquetados',d:'Shot 250 mL u otros — rotulados con punto, fecha y parámetro'},
+      {id:'ir9',t:'Caja de recuperado completa',d:'Materiales para recuperación de muestra en campo'}
+    ]
+  },
+  {
+    id:'campo', ico:'🏭', title:'Acceso a la fuente y montaje', scope:'all',
+    items:[
+      {id:'cm1',t:'Plataforma o punto de muestreo confirmado y accesible',d:'Coordinar con encargado del titular antes de llegar'},
+      {id:'cm2',t:'Diámetro y geometría del ducto conocidos',d:'Para cálculo de puntos de traverso (CH-1)'},
+      {id:'cm3',t:'Extensiones eléctricas suficientes',d:'Largo adecuado a la plataforma; carrete o extensión'},
+      {id:'cm4',t:'Sistema de montaje listo (rieles, tecles, cuerda)',d:'Rieles 2.5 m, tecles, cuerda de izado según altura'},
+      {id:'cm5',t:'Permiso de trabajo firmado y acceso confirmado',d:'Llave de acceso, acompañante designado por titular'},
+      {id:'cm6',t:'Comunicación confirmada con coordinador en sitio',d:'Nombre y teléfono / canal de radio'}
+    ]
+  },
+  {
+    id:'epp', ico:'🦺', title:'EPP y seguridad', scope:'all',
+    items:[
+      {id:'e1',t:'Casco de seguridad para cada integrante',d:'Con barbuquejo si hay trabajo en altura'},
+      {id:'e2',t:'Guantes para trabajo en caliente y para reactivos',d:'Térmicos para caja caliente/sonda; nitrilo para reactivos'},
+      {id:'e3',t:'Gafas / lentes de seguridad',d:'Obligatorio en plataforma y al manipular reactivos'},
+      {id:'e4',t:'Calzado de seguridad (punta de acero)',d:'Todo el equipo en terreno'},
+      {id:'e5',t:'Arnés y línea de vida si hay trabajo en altura',d:'H > 1.8 m — obligatorio, verificar estado'},
+      {id:'e6',t:'Detector de gases portátil (H₂S / SO₂ / CO)',d:'Refinería, smelter, fundición — verificar calibración'},
+      {id:'e7',t:'Extintor disponible en vehículo o zona de trabajo',d:'Verificar presión y fecha de mantención'},
+      {id:'e8',t:'EPP especial para Hg (guantes, mascarilla con filtro)',d:'Obligatorio si se trabaja con CH-29 c/Hg',sc_id:'CH29Hg'}
+    ]
+  }
+];
+
+const active = new Set();
+const ST = {chk:{},flag:{},note:{}};
+
+// ── CHIPS ──
+function initChips(){
+  ['cems','iso'].forEach(type=>{
+    const cont = document.getElementById('chips-'+type);
+    METHODS[type].forEach(m=>{
+      const c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'chip';
+      c.id = 'chip-'+m.id;
+      c.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none"><polyline points="20 6 9 17 4 12"/></svg><span>${m.label}</span> <span style="opacity:.7;font-size:12px">${m.sub}</span>`;
+      c.addEventListener('click', ()=>toggleMethod(m.id, type));
+      cont.appendChild(c);
+    });
+  });
+}
+
+function toggleMethod(id, type){
+  active.has(id)?active.delete(id):active.add(id);
+  const c = document.getElementById('chip-'+id);
+  const on = active.has(id);
+  c.className = 'chip'+(on?' a'+type[0]:'');
+  const sv = c.querySelector('svg');
+  if(sv) sv.style.display = on?'inline-block':'none';
+  renderSections();
+}
+
+// ── ITEM VISIBILITY ──
+function itemVis(it){
+  if(!it.sc && !it.sc_id && !it.sc_multi) return true;
+  const cemsIds = METHODS.cems.map(m=>m.id);
+  const isoIds  = METHODS.iso.map(m=>m.id);
+  if(it.sc==='cems') return [...active].some(a=>cemsIds.includes(a));
+  if(it.sc==='iso')  return [...active].some(a=>isoIds.includes(a));
+  if(it.sc_id) return active.has(it.sc_id);
+  if(it.sc_multi) return it.sc_multi.some(s=>active.has(s));
+  return true;
+}
+
+function secVis(sec){
+  if(active.size===0) return false;
+  const hasCems = [...active].some(a=>METHODS.cems.map(m=>m.id).includes(a));
+  const hasIso  = [...active].some(a=>METHODS.iso.map(m=>m.id).includes(a));
+  if(sec.scope==='all')  return true;
+  if(sec.scope==='cems') return hasCems;
+  if(sec.scope==='iso')  return hasIso;
+  return false;
+}
+
+// ── RENDER ──
+function renderSections(){
+  updateBanner();
+  const cont = document.getElementById('sections');
+  cont.innerHTML = '';
+  if(active.size===0){
+    cont.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>Selecciona uno o más métodos<br>para cargar el checklist</div>';
+    updateProgress(); return;
+  }
+  SECS.forEach(sec=>{
+    if(!secVis(sec)) return;
+    const vis = sec.items.filter(itemVis);
+    if(!vis.length) return;
+    vis.forEach(it=>{if(!(it.id in ST.chk)){ST.chk[it.id]=false;ST.flag[it.id]='';ST.note[it.id]='';}});
+    const el = document.createElement('div');
+    el.className='sec'; el.id='sec-'+sec.id;
+    const scopeBadge = sec.scope==='cems'?'<span class="sec-badge sb-c">CEMS</span>':sec.scope==='iso'?'<span class="sec-badge sb-i">Isocinético</span>':'<span class="sec-badge sb-cm">Común</span>';
+    const itemsHTML = vis.map(it=>{
+      const f = ST.flag[it.id]||'';
+      return `<div class="item" id="item-${it.id}">
+        <div class="cb-wrap"><input type="checkbox" id="cb-${it.id}" ${ST.chk[it.id]?'checked':''} onchange="chkToggle('${it.id}',this.checked)"/></div>
+        <div class="item-right">
+          <div class="item-top">
+            <div>
+              <div class="item-txt">${it.t}</div>
+              ${it.d?`<div class="item-det">${it.d}</div>`:''}
+            </div>
+            <div class="flags">
+              <button class="fb${f==='ok'?' ok':''}" onclick="setFlag('${it.id}','ok')" aria-label="Conforme">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+              <button class="fb${f==='wn'?' wn':''}" onclick="setFlag('${it.id}','wn')" aria-label="Advertencia">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </button>
+              <button class="fb${f==='fl'?' fl':''}" onclick="setFlag('${it.id}','fl')" aria-label="Problema">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <input class="note" type="text" placeholder="Nota..." value="${ST.note[it.id]||''}" oninput="ST.note['${it.id}']=this.value"/>
+        </div>
+      </div>`;
+    }).join('');
+    const done = vis.filter(it=>ST.chk[it.id]).length;
+    el.innerHTML=`
+      <div class="sec-head" onclick="toggleSec('${sec.id}')">
+        <span class="sec-ico">${sec.ico}</span>
+        <span class="sec-ttl">${sec.title}</span>
+        ${scopeBadge}
+        <span class="sec-cnt" id="cnt-${sec.id}">${done}/${vis.length}</span>
+        <span class="sec-arr" id="arr-${sec.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="sec-body" id="body-${sec.id}">${itemsHTML}</div>`;
+    cont.appendChild(el);
+    updateSecUI(sec.id);
+  });
+  updateProgress();
+  updateAlerts();
+}
+
+function toggleSec(id){
+  const body = document.getElementById('body-'+id);
+  const arr  = document.getElementById('arr-'+id);
+  const open = body.style.display!=='none';
+  body.style.display = open?'none':'block';
+  arr.classList.toggle('rotated', open);
+}
+
+function chkToggle(id,val){
+  ST.chk[id]=val;
+  if(val&&!ST.flag[id]) setFlag(id,'ok');
+  updateAll();
+}
+
+function setFlag(id,flag){
+  ST.flag[id] = ST.flag[id]===flag?'':flag;
+  const btns = document.querySelectorAll(`#item-${id} .fb`);
+  if(btns.length<3) return;
+  btns[0].className='fb'+(ST.flag[id]==='ok'?' ok':'');
+  btns[1].className='fb'+(ST.flag[id]==='wn'?' wn':'');
+  btns[2].className='fb'+(ST.flag[id]==='fl'?' fl':'');
+  updateAll();
+}
+
+function updateSecUI(secId){
+  const sec = SECS.find(s=>s.id===secId);
+  if(!sec) return;
+  const el = document.getElementById('sec-'+secId);
+  if(!el) return;
+  const vis = sec.items.filter(itemVis);
+  const done = vis.filter(it=>ST.chk[it.id]).length;
+  const hasFail = vis.some(it=>ST.flag[it.id]==='fl');
+  const hasWarn = vis.some(it=>ST.flag[it.id]==='wn');
+  const cnt = document.getElementById('cnt-'+secId);
+  if(cnt) cnt.textContent=`${done}/${vis.length}`;
+  el.classList.toggle('fail', hasFail);
+  el.classList.toggle('allok', done===vis.length&&!hasFail&&!hasWarn);
+}
+
+function allVisItems(){
+  return SECS.filter(secVis).flatMap(s=>s.items.filter(itemVis));
+}
+
+function updateAll(){
+  SECS.forEach(s=>{if(document.getElementById('sec-'+s.id)) updateSecUI(s.id)});
+  updateProgress();
+  updateAlerts();
+}
+
+function updateProgress(){
+  const all = allVisItems();
+  const total = all.length;
+  const done  = all.filter(it=>ST.chk[it.id]).length;
+  const fails = all.filter(it=>ST.flag[it.id]==='fl').length;
+  const warns = all.filter(it=>ST.flag[it.id]==='wn').length;
+  const pct   = total>0?Math.round(done/total*100):0;
+  document.getElementById('pbar').style.width=(total>0?pct:0)+'%';
+  document.getElementById('plabel').textContent = total>0?`${done} / ${total} ítems verificados (${pct}%)`:'Selecciona un método para comenzar';
+  const b = document.getElementById('gbadge');
+  if(total===0){b.className='badge-global bg-pend';b.textContent='Sin métodos';}
+  else if(fails>0){b.className='badge-global bg-fail';b.textContent=`${fails} problema(s)`;}
+  else if(warns>0){b.className='badge-global bg-warn';b.textContent=`${warns} advertencia(s)`;}
+  else if(done===total&&total>0){b.className='badge-global bg-ok';b.textContent='Todo verificado ✓';}
+  else{b.className='badge-global bg-pend';b.textContent=`${pct}% completado`;}
+}
+
+function updateAlerts(){
+  const cont = document.getElementById('alerts');
+  cont.innerHTML='';
+  const all = allVisItems();
+  const fails = all.filter(it=>ST.flag[it.id]==='fl');
+  const warns = all.filter(it=>ST.flag[it.id]==='wn');
+  if(fails.length){
+    const el=document.createElement('div');
+    el.className='alert alert-d show';
+    el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div><strong>¡Alerta!</strong> ${fails.length} ítem(s) con problemas:<br>${fails.map(f=>`· ${f.t}${ST.note[f.id]?' ('+ST.note[f.id]+')':''}`).join('<br>')}</div>`;
+    cont.appendChild(el);
+  }
+  if(warns.length){
+    const el=document.createElement('div');
+    el.className='alert alert-w show';
+    el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><strong>Atención:</strong> ${warns.length} advertencia(s):<br>${warns.map(w=>`· ${w.t}${ST.note[w.id]?' ('+ST.note[w.id]+')':''}`).join('<br>')}</div>`;
+    cont.appendChild(el);
+  }
+}
+
+function updateBanner(){
+  const banner = document.getElementById('mbanner');
+  if(active.size===0){banner.className='mbanner';return;}
+  const hasCems=[...active].some(a=>METHODS.cems.map(m=>m.id).includes(a));
+  const hasIso=[...active].some(a=>METHODS.iso.map(m=>m.id).includes(a));
+  const allM=[...METHODS.cems,...METHODS.iso];
+  const tags=[...active].map(id=>{const m=allM.find(x=>x.id===id);const cls=METHODS.cems.find(x=>x.id===id)?'mtag-c':'mtag-i';return m?`<span class="mtag ${cls}">${m.label}</span>`:''}).join('');
+  let cls='mbanner show ';
+  let ico='';
+  if(hasCems&&hasIso){cls+='mb-both';ico='🔀 Campaña mixta:';}
+  else if(hasCems){cls+='mb-cems';ico='📡 Medición continua:';}
+  else{cls+='mb-iso';ico='🧪 Muestreo isocinético:';}
+  banner.className=cls;
+  banner.innerHTML=`${ico} ${tags}`;
+}
+
+// ── REPORTE ──
+function generarReporte(){
+  const emp=document.getElementById('empresa').value||'(sin especificar)';
+  const reg=document.getElementById('registro').value||'—';
+  const fecha=document.getElementById('fecha').value||'(sin fecha)';
+  const sup=document.getElementById('supervisor').value||'(sin especificar)';
+  const equ=document.getElementById('equipo').value||'(sin especificar)';
+  const obs=document.getElementById('obs').value||'Sin novedades.';
+  const allM=[...METHODS.cems,...METHODS.iso];
+  const metStr=[...active].map(id=>allM.find(m=>m.id===id)).filter(Boolean).map(m=>m.label+' ('+m.sub+')').join(', ')||'—';
+  const all=allVisItems();
+  const total=all.length;
+  const done=all.filter(it=>ST.chk[it.id]).length;
+  const fails=all.filter(it=>ST.flag[it.id]==='fl');
+  const warns=all.filter(it=>ST.flag[it.id]==='wn');
+  const pend=all.filter(it=>!ST.chk[it.id]);
+  const estado=done===total&&fails.length===0?'✅ LISTO PARA OPERAR':fails.length>0?'🔴 CON PROBLEMAS — REVISAR ANTES DE SALIR':warns.length>0?'🟡 APTO CON ADVERTENCIAS':'⚪ CHECKLIST INCOMPLETO';
+
+  let txt=`📋 CHECKLIST PREOPERACIONAL\nSGS Chile · Emisiones Atmosféricas\n${'─'.repeat(40)}\n`;
+  txt+=`Empresa/Fuente : ${emp}\nN° Registro    : ${reg}\nFecha campaña  : ${fecha}\nMétodo(s)      : ${metStr}\nSupervisor     : ${sup}\nEquipo         : ${equ}\n${'─'.repeat(40)}\n`;
+  txt+=`ESTADO: ${estado}\nVerificados: ${done} / ${total}\n${'─'.repeat(40)}\n`;
+
+  SECS.filter(secVis).forEach(sec=>{
+    const vis=sec.items.filter(itemVis);
+    if(!vis.length) return;
+    const sd=vis.filter(it=>ST.chk[it.id]).length;
+    txt+=`\n${sec.ico} ${sec.title} (${sd}/${vis.length})\n`;
+    vis.forEach(it=>{
+      const cb=ST.chk[it.id]?'[✓]':'[ ]';
+      const fl=ST.flag[it.id]==='fl'?'🔴':ST.flag[it.id]==='wn'?'🟡':ST.flag[it.id]==='ok'?'🟢':'   ';
+      const nt=ST.note[it.id]?' → '+ST.note[it.id]:'';
+      txt+=`  ${cb} ${fl} ${it.t}${nt}\n`;
+    });
+  });
+
+  if(fails.length){txt+=`\n${'─'.repeat(40)}\n🔴 PROBLEMAS (${fails.length}):\n`;fails.forEach(f=>{txt+=`  • ${f.t}`;if(ST.note[f.id])txt+=` → ${ST.note[f.id]}`;txt+='\n';});}
+  if(warns.length){txt+=`\n${'─'.repeat(40)}\n🟡 ADVERTENCIAS (${warns.length}):\n`;warns.forEach(w=>{txt+=`  • ${w.t}`;if(ST.note[w.id])txt+=` → ${ST.note[w.id]}`;txt+='\n';});}
+  if(pend.length&&pend.length<total){txt+=`\n${'─'.repeat(40)}\n⚪ SIN VERIFICAR (${pend.length}):\n`;pend.slice(0,8).forEach(p=>{txt+=`  • ${p.t}\n`;});if(pend.length>8)txt+=`  ...y ${pend.length-8} más\n`;}
+  txt+=`\n${'─'.repeat(40)}\nOBSERVACIONES:\n${obs}\n${'─'.repeat(40)}\nSGS Chile — Checklist ETFA\n`;
+
+  document.getElementById('modal-tags').innerHTML=`<span class="stag ${fails.length?'stag-fl':'stag-ok'}">${fails.length} problemas</span><span class="stag ${warns.length?'stag-wn':'stag-ok'}">${warns.length} advertencias</span><span class="stag stag-nd">${total-done} sin verificar</span>`;
+  document.getElementById('modal-body').textContent=txt;
+  document.getElementById('modal-ov').classList.add('open');
+  document.getElementById('copied').style.display='none';
+}
+
+function copiar(){
+  const txt=document.getElementById('modal-body').textContent;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(txt).then(showCopied).catch(()=>copiarFallback(txt));
+  } else { copiarFallback(txt); }
+}
+function copiarFallback(txt){
+  const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');showCopied();}catch(e){}document.body.removeChild(ta);
+}
+function showCopied(){const el=document.getElementById('copied');el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
+
+function compartir(){
+  const txt=document.getElementById('modal-body').textContent;
+  if(navigator.share){
+    navigator.share({title:'Checklist ETFA — SGS Chile',text:txt}).catch(()=>copiar());
+  } else { copiar(); }
+}
+
+function cerrarModal(){document.getElementById('modal-ov').classList.remove('open');}
+document.getElementById('modal-ov').addEventListener('click',function(e){if(e.target===this)cerrarModal();});
+
+function resetear(){
+  if(!confirm('¿Reiniciar el checklist?\nSe perderán todos los datos ingresados.')) return;
+  active.clear();
+  ['chk','flag','note'].forEach(k=>{
+    Object.keys(ST[k]).forEach(j=>{ST[k][j]=k==='chk'?false:'';});
+  });
+  ['empresa','registro','supervisor','equipo','obs'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('fecha').valueAsDate=new Date();
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.className='chip';
+    const sv=c.querySelector('svg');if(sv)sv.style.display='none';
+  });
+  renderSections();
+  updateProgress();
+  updateBanner();
+}
+
+// init
+document.getElementById('fecha').valueAsDate = new Date();
+initChips();
+</script>
+</body>
+</html>
